@@ -1,0 +1,38 @@
+---
+# =============================================================================
+# Ansible Playbook: Collect and Display Cisco IOS Facts
+# Description : Uses cisco.ios.ios_facts to gather device information
+#               and prints hostname and IOS version via the debug module.
+# Target Group: routers (defined in your Ansible inventory)
+# =============================================================================
+
+- name: Gather and display Cisco IOS device facts
+  hosts: routers             # Target the 'routers' group from inventory
+  connection: network_cli    # Use network_cli for Cisco IOS CLI-based access
+  become: false              # No privilege escalation needed for read-only facts
+  gather_facts: false        # Disable default Ansible fact gathering (we do it manually)
+
+  # ---------------------------------------------------------------------------
+  # Variables Section
+  # Defines the network OS so Ansible knows which CLI parser to use
+  # ---------------------------------------------------------------------------
+  vars:
+    ansible_network_os: ios  # Tells network_cli to use Cisco IOS handling
+
+  # ---------------------------------------------------------------------------
+  # Tasks Section
+  # ---------------------------------------------------------------------------
+  tasks:
+
+    # Task 1: Collect all available facts from the IOS device
+    - name: Collect all IOS facts
+      cisco.ios.ios_facts:
+        gather_subset: all             # Gather every available fact subset
+
+    # Task 2: Print the device hostname retrieved from facts
+    - name: Display device hostname and OS version
+      ansible.builtin.debug:
+        msg:
+          - "Hostname   : {{ ansible_net_hostname }}"
+          - "IOS Version: {{ ansible_net_version }}"
+          - "Model    : {{ ansible_net_model }}"
